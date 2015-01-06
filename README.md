@@ -79,9 +79,8 @@ The only purpose of this is to test that everything works.
   
 * * *
 ##### POST /directors  
-
-params: ```{livestream_id: 6488834}
-```  
+params: `{livestream_id: 6488834}`   
+  
 Create a new director record, passing a Livestream account ID as a parameter.  
 The livestream ID must be unique. An error message will be returned if you attempt to add a director whose Livestream account ID was already added.   An error message will also be returned if the Livestream account ID is invalid.  
   
@@ -96,10 +95,10 @@ Find the director with the specified unique Livestream ID.
   
 * * *
 ##### PUT /directors/:livestream_id  
-headers: ```{Authorization: Bearer 10f607392e9e569848a4f03a8cc206ff}```  
-params: ```{favorite_camera: 'Sony NEX-VG30H',  
-	favorite_movies: 'Goodfellas', 'After Hours', 'Shutter Island'}
-```  
+headers: `{Authorization: Bearer 10f607392e9e569848a4f03a8cc206ff}`
+  
+params: `{favorite_camera: 'Sony NEX-VG30H', favorite_movies: 'Goodfellas', 'After Hours', 'Shutter Island'}`
+  
 Update a director's favorite camera and/or favorite movies.  
 In order to update the director's account, the user must authenticate themself with the MD5 hash of the director's full_name.  
 
