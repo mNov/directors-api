@@ -17,6 +17,24 @@ var Director  = require('./director');
 
 var router = express.Router();
 
+function isValidJson(o) {
+    json = JSON.stringify(o);
+    if (json === '{}' || json === null || json === undefined)
+        return false;
+    return true;
+
+}
+
+function isAuthorized(req, toValidate) {
+    var bearer_token = req.get('Authorization');                
+    if(bearer_token)
+        var token = bearer_token.replace('Bearer', '').trim();
+        if (token === md5(toValidate))
+            return true;
+        return false;
+    return false;
+}
+
 
 // middleware to use for all requests
 router.use(function(req, res, next) {
@@ -39,8 +57,9 @@ router.route('/directors')
     // POST http://localhost:8080/api/directors
     // params: {livestream_id: 12345}
     .post(function(req, res) {
+        if(!isValidJson(req.body))
+            res.status(400).json({message: 'Error! Bad JSON in request.'});
         var ls_id = req.body.livestream_id;
-
         request('https://api.new.livestream.com/accounts/' + ls_id,
             function (error, response, body) {
                 if (!error && response.statusCode == 200) {
@@ -111,22 +130,21 @@ router.route('/directors/:livestream_id')
             if(director)
             {
                 var full_name = director.full_name;
-                //look for the Bearer token, and make sure it matches md5(full_name)
-                var bearer_token = req.get('Authorization');                
-                if(bearer_token)
-                    var token = bearer_token.replace('Bearer', '').trim();
-                else
-                    res.status(401).json({message: 'Authentication failed!'});
-                if (token === md5(full_name))
+                if(isAuthorized(req, full_name))
                 {
-                    if(req.body.hasOwnProperty('favorite_camera'))
-                        director.favorite_camera = req.body.favorite_camera;  // update the camera
-                    if(req.body.hasOwnProperty('favorite_movies'))
-                        director.favorite_movies = req.body.favorite_movies; // update the movies
+                    req_body = req.body;
+                    if(!isValidJson(req_body))
+                        res.status(400).json({message: 'Error! Bad JSON in request.'});
+                    if(!req_body.hasOwnProperty('favorite_camera') && !req_body.hasOwnProperty('favorite_movies'))
+                        res.status(400).json({message: 'Nothing to update!'})
+                    if(req_body.hasOwnProperty('favorite_camera'))
+                        director.favorite_camera = req_body.favorite_camera;  // update the camera
+                    if(req_body.hasOwnProperty('favorite_movies'))
+                        director.favorite_movies = req_body.favorite_movies; // update the movies
                     director.save(function(err) {
-                    if (err)
-                        res.send(err);
-                    res.json({ message: 'Director updated!' });
+                        if (err)
+                            res.send(err);
+                        res.json({ message: 'Director updated!' });
                     });
                 }
                 else
